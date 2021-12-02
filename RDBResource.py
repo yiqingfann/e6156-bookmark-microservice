@@ -38,3 +38,11 @@ class BaseRDBResource:
         db_name, table_name = cls.get_db_and_table_name()
         RDBService.delete(db_name, table_name, template)
 
+class BookmarkResource(BaseRDBResource):
+    '''
+        represent the e6156.user table
+    '''
+    
+    @classmethod
+    def get_db_and_table_name(cls):
+        return "bookmarkDB", "bookmark"

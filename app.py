@@ -2,6 +2,8 @@ from flask import Flask, Response, request, redirect, url_for, g
 import json
 import uuid
 
+from RDBResource import BookmarkResource
+
 app = Flask(__name__)
 
 # -------------------- authentication --------------------
@@ -71,6 +73,46 @@ def before_request():
 @app.route('/')
 def index():
     response = Response(f'Hello\n {g.email}\n {g.user_id}', status=200)
+    return response
+
+@app.route('/api/bookmarks', methods = ['POST'])
+def create_bookmark():
+    template = request.get_json()
+    assert(template.get('user_id') is not None and template.get('post_id') is not None and len(template)==2)
+    BookmarkResource.create(template)
+    response = Response("Successfully created bookmark!", status=200)
+    return response
+
+@app.route('/api/bookmarks', methods = ['GET'])
+def retrieve_bookmark():
+    template = {}
+    field_list = []
+    for key in request.args:
+        vals = request.args.get(key).split(",")
+        if key == "fields":
+            field_list.extend(vals)
+        else:
+            if len(vals) == 1:
+                template[key] = vals[0]
+            else:
+                template[key] = vals
+    field_list = field_list if len(field_list) else None
+    
+    result = BookmarkResource.find_by_template(template, field_list)
+    response = Response(json.dumps(result), status=200, content_type="application/json")
+    return response
+
+@app.route('/api/bookmarks', methods = ['DELETE'])
+def delete_bookmark():
+    template = {}
+    for key in request.args:
+        vals = request.args.get(key).split(",")
+        if len(vals) == 1:
+            template[key] = vals[0]
+        else:
+            template[key] = vals
+    BookmarkResource.delete(template)
+    response = Response("Successfully deleted bookmark!", status=200)
     return response
 
 # ------------------- main function -------------------
