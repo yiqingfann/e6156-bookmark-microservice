@@ -78,13 +78,14 @@ def index():
 @app.route('/api/bookmarks', methods = ['POST'])
 def create_bookmark():
     template = request.get_json()
-    template['user_id'] = g.user_id
+    if template.get('user_id') is None:
+        template['user_id'] = g.user_id
     
     if template.get('post_id') is not None:
         BookmarkResource.create(template)
         response = Response("Successfully created bookmark!", status=200)
     else:
-        response = Response("Invalid data!", status=400)
+        response = Response("Invalid data: must provide post_id in request body!", status=400)
     return response
 
 @app.route('/api/bookmarks', methods = ['GET'])
@@ -101,6 +102,8 @@ def retrieve_bookmark():
             else:
                 template[key] = vals
     field_list = field_list if len(field_list) else None
+    if template.get('user_id') is None:
+        template['user_id'] = g.user_id
     
     result = BookmarkResource.find_by_template(template, field_list)
     response = Response(json.dumps(result), status=200, content_type="application/json")
@@ -115,13 +118,14 @@ def delete_bookmark():
             template[key] = vals[0]
         else:
             template[key] = vals
-    template['user_id'] = g.user_id
+    if template.get('user_id') is None:
+        template['user_id'] = g.user_id
     
     if template.get('post_id') is not None:
         BookmarkResource.delete(template)
         response = Response("Successfully deleted bookmark!", status=200)
     else:
-        response = Response("Invalid data!", status=400)
+        response = Response("Invalid data: must provide post_id in query param!", status=400)
     return response
 
 # ------------------- main function -------------------
