@@ -78,9 +78,13 @@ def index():
 @app.route('/api/bookmarks', methods = ['POST'])
 def create_bookmark():
     template = request.get_json()
-    assert(template.get('user_id') is not None and template.get('post_id') is not None and len(template)==2)
-    BookmarkResource.create(template)
-    response = Response("Successfully created bookmark!", status=200)
+    template['user_id'] = g.user_id
+    
+    if template.get('post_id') is not None:
+        BookmarkResource.create(template)
+        response = Response("Successfully created bookmark!", status=200)
+    else:
+        response = Response("Invalid data!", status=400)
     return response
 
 @app.route('/api/bookmarks', methods = ['GET'])
@@ -111,8 +115,13 @@ def delete_bookmark():
             template[key] = vals[0]
         else:
             template[key] = vals
-    BookmarkResource.delete(template)
-    response = Response("Successfully deleted bookmark!", status=200)
+    template['user_id'] = g.user_id
+    
+    if template.get('post_id') is not None:
+        BookmarkResource.delete(template)
+        response = Response("Successfully deleted bookmark!", status=200)
+    else:
+        response = Response("Invalid data!", status=400)
     return response
 
 # ------------------- main function -------------------
